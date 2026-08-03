@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Present Simple — English Test</title>
+  <style>
+    :root { --ink:#1e293b; --accent:#4f46e5; --soft:#eef2ff; --ok:#15803d; --bad:#b91c1c; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink); background:linear-gradient(135deg,#eff6ff,#f5f3ff); display:grid; place-items:center; padding:24px; }
+    main { width:min(760px,100%); background:#fff; border-radius:22px; box-shadow:0 18px 45px #312e8130; overflow:hidden; }
+    header { padding:34px 38px 26px; background:var(--soft); }
+    h1 { margin:0; color:#312e81; font-size:clamp(1.7rem,4vw,2.45rem); }
+    header p { margin:10px 0 0; font-size:1.05rem; }
+    #quiz { padding:30px 38px 38px; }
+    .meta { display:flex; justify-content:space-between; gap:12px; color:#475569; font-weight:700; margin-bottom:12px; }
+    .track { height:9px; border-radius:999px; background:#e2e8f0; overflow:hidden; margin-bottom:29px; }
+    #bar { height:100%; width:0; background:linear-gradient(90deg,#6366f1,#a855f7); transition:width .25s; }
+    .question { font-size:1.3rem; font-weight:750; line-height:1.45; margin:0 0 20px; }
+    .options { display:grid; gap:11px; }
+    button.option { text-align:left; border:2px solid #e2e8f0; border-radius:12px; background:#fff; padding:14px 16px; color:inherit; font-size:1rem; cursor:pointer; transition:.16s; }
+    button.option:hover:not(:disabled), button.option:focus-visible { border-color:#818cf8; background:#f5f3ff; outline:none; }
+    button.option:disabled { cursor:default; }
+    button.option.correct { border-color:#22c55e; background:#f0fdf4; color:var(--ok); }
+    button.option.wrong { border-color:#f87171; background:#fef2f2; color:var(--bad); }
+    #feedback { min-height:27px; margin:17px 0 0; font-weight:700; }
+    .correct-text { color:var(--ok); } .wrong-text { color:var(--bad); }
+    #next, #restart { margin-top:22px; border:0; border-radius:11px; background:var(--accent); color:#fff; padding:13px 22px; font-size:1rem; font-weight:750; cursor:pointer; }
+    #next:hover, #restart:hover { background:#3730a3; }
+    .hidden { display:none; }
+    #result { text-align:center; padding:6px 0; }
+    #result h2 { color:#312e81; font-size:2rem; margin:8px 0; }
+    .note { color:#475569; line-height:1.55; }
+    @media (max-width:520px) { header,#quiz { padding:25px 22px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header><h1>Present Simple Test</h1><p>Choose the correct answer. Good luck!</p></header>
+    <section id="quiz">
+      <div class="meta"><span id="count"></span><span id="score">Score: 0</span></div>
+      <div class="track"><div id="bar"></div></div>
+      <div id="task"></div><div id="feedback"></div>
+      <button id="next" class="hidden" type="button">Next question</button>
+      <div id="result" class="hidden"></div>
+    </section>
+  </main>
+  <script>
+    const questions = [
+      ["My brother ___ to school by bus.",["go","goes","going"],1,"With he/she/it, add -s: goes."],
+      ["___ you like chocolate?",["Do","Does","Are"],0,"Use Do with you."],
+      ["She ___ television in the evening.",["watch","watches","watching"],1,"She + watches."],
+      ["We ___ not play football on Mondays.",["does","do","are"],1,"Use do not (don't) with we."],
+      ["Tom ___ his teeth twice a day.",["brush","brushes","brushs"],1,"Verbs ending in -sh take -es: brushes."],
+      ["My parents ___ at a hospital.",["works","work","working"],1,"Parents is plural, so use work."],
+      ["___ Anna live in London?",["Do","Does","Is"],1,"Use Does with Anna (she)."],
+      ["I usually ___ coffee for breakfast.",["drink","drinks","am drink"],0,"I + base verb: drink."],
+      ["The cat ___ milk.",["don't like","doesn't likes","doesn't like"],2,"After doesn't, use the base verb: like."],
+      ["They ___ homework after school.",["does","do","doing"],1,"They do homework."],
+      ["He ___ his grandparents every weekend.",["visit","visits","is visit"],1,"He + visits."],
+      ["___ your friends speak English?",["Does","Do","Are"],1,"Friends is plural: Do."],
+      ["Sarah ___ get up late on weekdays.",["don't","doesn't","isn't"],1,"Sarah = she, so doesn't."],
+      ["Water ___ at 100°C.",["boil","boils","is boiling"],1,"Use Present Simple for facts: water boils."],
+      ["How often ___ your father cook?",["do","does","is"],1,"Your father = he, so Does."],
+    ].map(([q,options,answer,explanation]) => ({q,options,answer,explanation}));
+    let index = 0, points = 0, answered = false;
+    const task = document.querySelector('#task'), count = document.querySelector('#count'), score = document.querySelector('#score'), bar = document.querySelector('#bar'), feedback = document.querySelector('#feedback'), next = document.querySelector('#next'), result = document.querySelector('#result');
+    function render() {
+      answered=false; feedback.textContent=''; next.classList.add('hidden');
+      const item=questions[index]; count.textContent=`Question ${index+1} of ${questions.length}`; score.textContent=`Score: ${points}`; bar.style.width=`${index/questions.length*100}%`;
+      task.innerHTML=`<p class="question">${item.q}</p><div class="options">${item.options.map((option,i)=>`<button class="option" type="button" data-i="${i}">${String.fromCharCode(65+i)}. ${option}</button>`).join('')}</div>`;
+      task.querySelectorAll('.option').forEach(button=>button.addEventListener('click',choose));
+    }
+    function choose(event) {
+      if(answered) return; answered=true;
+      const chosen=Number(event.currentTarget.dataset.i), item=questions[index], buttons=task.querySelectorAll('.option');
+      buttons.forEach((button,i)=>{ button.disabled=true; if(i===item.answer) button.classList.add('correct'); if(i===chosen && i!==item.answer) button.classList.add('wrong'); });
+      if(chosen===item.answer) { points++; feedback.innerHTML=`<span class="correct-text">Correct!</span> ${item.explanation}`; score.textContent=`Score: ${points}`; }
+      else feedback.innerHTML=`<span class="wrong-text">Not quite.</span> ${item.explanation}`;
+      next.textContent=index===questions.length-1?'See results':'Next question'; next.classList.remove('hidden');
+    }
+    next.addEventListener('click',()=>{ index++; index<questions.length ? render() : showResult(); });
+    function showResult() {
+      task.innerHTML=''; feedback.textContent=''; next.classList.add('hidden'); count.textContent='Test complete'; bar.style.width='100%';
+      const percent=Math.round(points/questions.length*100); const message=percent===100?'Excellent work!':percent>=70?'Very good! Review the explanations and keep practising.':'Keep practising — you can try again right now.';
+      result.innerHTML=`<h2>${points} / ${questions.length} (${percent}%)</h2><p class="note">${message}</p><button id="restart" type="button">Try again</button>`; result.classList.remove('hidden'); document.querySelector('#restart').addEventListener('click',()=>{index=0;points=0;result.classList.add('hidden');render();});
+    }
+    render();
+  </script>
+</body>
+</html>
